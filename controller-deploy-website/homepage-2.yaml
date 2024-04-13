@@ -1,0 +1,8 @@
+apiVersion: "web.example.com/v1"
+kind: WebSite
+metadata:
+  name: homepage-2
+spec:
+  imageName: "homepage-2:latest"
+  replicas: 1
+

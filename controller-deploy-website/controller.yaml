@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-controller
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: website-controller
+  template:
+    metadata:
+      labels:
+        app: website-controller
+    spec:
+      serviceAccountName: website-controller
+      containers:
+      - name: website-controller
+        image: website-controller
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  namespace: default
+  name: website-controller-role
+rules:
+- apiGroups: [""]
+  resources: ["services", "endpoints", "pods"]
+  verbs: ["get", "list", "watch", "create", "update", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "delete"]
+- apiGroups: ["web.example.com"]
+  resources: ["websites"]
+  verbs: ["get", "list", "watch", "create", "update", "delete"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: website-controller
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: website-controller-rolebinding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: website-controller
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: website-controller-role
+  apiGroup: rbac.authorization.k8s.io
